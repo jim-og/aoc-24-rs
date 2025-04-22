@@ -1,10 +1,10 @@
-use std::collections::BinaryHeap;
+use std::collections::{BinaryHeap, HashMap};
 
 use aoc_runner_derive::{aoc, aoc_generator};
 #[aoc_generator(day1)]
-fn parse(input: &str) -> (BinaryHeap<usize>, BinaryHeap<usize>) {
-    let mut list_1 = BinaryHeap::new();
-    let mut list_2 = BinaryHeap::new();
+fn parse(input: &str) -> (Vec<usize>, Vec<usize>) {
+    let mut list_1 = Vec::new();
+    let mut list_2 = Vec::new();
 
     for line in input.trim().lines() {
         let split = line.trim().split("   ").collect::<Vec<&str>>();
@@ -28,9 +28,9 @@ fn parse(input: &str) -> (BinaryHeap<usize>, BinaryHeap<usize>) {
 }
 
 #[aoc(day1, part1)]
-fn part1(input: &(BinaryHeap<usize>, BinaryHeap<usize>)) -> usize {
-    let mut list_1 = input.0.clone();
-    let mut list_2 = input.1.clone();
+fn part1(input: &(Vec<usize>, Vec<usize>)) -> usize {
+    let mut list_1 = BinaryHeap::from(input.0.clone());
+    let mut list_2 = BinaryHeap::from(input.1.clone());
     let mut res = 0;
 
     while let Some(l1) = list_1.pop() {
@@ -45,12 +45,18 @@ fn part1(input: &(BinaryHeap<usize>, BinaryHeap<usize>)) -> usize {
 }
 
 #[aoc(day1, part2)]
-fn part2(input: &(BinaryHeap<usize>, BinaryHeap<usize>)) -> usize {
-    let mut list_1 = input.0.clone();
-    let mut list_2 = input.1.clone();
-    let mut res = 0;
+fn part2(input: &(Vec<usize>, Vec<usize>)) -> usize {
+    let counts = input.1.iter().fold(HashMap::new(), |mut acc, num| {
+        *acc.entry(num).or_insert(0) += 1;
+        acc
+    });
 
-    res
+    input.0.iter().fold(0, |mut acc, num| {
+        if let Some(count) = counts.get(num) {
+            acc += num * count;
+        }
+        acc
+    })
 }
 
 #[cfg(test)]
@@ -74,12 +80,13 @@ mod tests {
 
     #[test]
     fn part2_example() {
-        assert_eq!(part2(&parse(TEST)), 0);
+        assert_eq!(part2(&parse(TEST)), 31);
     }
 
     #[test]
     fn mainline() {
         let input = &parse(&parser::load_input(1));
         assert_eq!(part1(input), 1530215);
+        assert_eq!(part2(input), 26800609);
     }
 }

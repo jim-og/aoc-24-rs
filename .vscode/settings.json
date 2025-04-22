@@ -1,0 +1,8 @@
+{
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true,
+    "files.autoSave": "afterDelay",
+    "rust-analyzer.runnables.extraTestBinaryArgs": [
+        "--nocapture"
+    ]
+}

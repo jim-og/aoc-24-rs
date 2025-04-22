@@ -1,0 +1,10 @@
+[package]
+name = "aoc-24-rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+aoc-runner = "0.3.0"
+aoc-runner-derive = "0.3.0"
+num-integer = "0.1.46"
+test-case = "3.3.1"

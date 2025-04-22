@@ -1,1 +1,1 @@
-# aoc-24-rs
+# Advent of Code 2024

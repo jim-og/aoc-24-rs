@@ -34,7 +34,7 @@ impl Report for Vec<isize> {
 }
 
 #[aoc(day2, part1)]
-fn part1(input: &Vec<Vec<isize>>) -> usize {
+fn part1(input: &[Vec<isize>]) -> usize {
     input.iter().filter(|report| report.safe(1, 3)).count()
 }
 

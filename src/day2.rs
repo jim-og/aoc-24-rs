@@ -1,6 +1,6 @@
 use aoc_runner_derive::{aoc, aoc_generator};
 #[aoc_generator(day2)]
-fn parse(input: &str) -> Vec<Vec<usize>> {
+fn parse(input: &str) -> Vec<Vec<isize>> {
     input
         .trim()
         .lines()
@@ -14,40 +14,50 @@ fn parse(input: &str) -> Vec<Vec<usize>> {
 }
 
 trait Report {
-    fn safe(&self, min_diff: usize, max_diff: usize) -> bool;
+    fn safe(&self, min_diff: isize, max_diff: isize) -> bool;
 }
 
-impl Report for Vec<usize> {
-    fn safe(&self, min_diff: usize, max_diff: usize) -> bool {
-        let mut is_positive = None;
+impl Report for Vec<isize> {
+    fn safe(&self, min_diff: isize, max_diff: isize) -> bool {
+        let mut prev_diff = self[1] - self[0];
+
         for w in self.windows(2) {
-            let diff = w[1] as isize - w[0] as isize;
-            if diff.unsigned_abs() < min_diff || diff.unsigned_abs() > max_diff {
+            let diff = w[1] - w[0];
+            if diff.abs() < min_diff || diff.abs() > max_diff || diff.signum() != prev_diff.signum()
+            {
                 return false;
             }
-            if let Some(positive) = is_positive {
-                if positive != diff.is_positive() {
-                    return false;
-                }
-            } else {
-                is_positive = Some(diff.is_positive());
-            }
+            prev_diff = diff;
         }
-        return true;
+        true
     }
 }
 
 #[aoc(day2, part1)]
-fn part1(input: &Vec<Vec<usize>>) -> usize {
-    input
-        .iter()
-        .map(|report| if report.safe(1, 3) { 1 } else { 0 })
-        .sum()
+fn part1(input: &Vec<Vec<isize>>) -> usize {
+    input.iter().filter(|report| report.safe(1, 3)).count()
 }
 
 #[aoc(day2, part2)]
-fn part2(_input: &Vec<Vec<usize>>) -> usize {
-    todo!()
+fn part2(input: &Vec<Vec<isize>>) -> usize {
+    let mut count = 0;
+
+    for report in input {
+        if report.safe(1, 3) {
+            count += 1;
+        } else {
+            for i in 0..report.len() {
+                let mut r = report.clone();
+                r.remove(i);
+                if r.safe(1, 3) {
+                    count += 1;
+                    break;
+                }
+            }
+        }
+    }
+
+    count
 }
 
 #[cfg(test)]
@@ -78,5 +88,6 @@ mod tests {
     fn mainline() {
         let input = &parse(&parser::load_input(2));
         assert_eq!(part1(input), 314);
+        assert_eq!(part2(input), 373);
     }
 }

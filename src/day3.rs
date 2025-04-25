@@ -25,7 +25,7 @@ fn parse(input: &str) -> Vec<Operation> {
 }
 
 #[aoc(day3, part1)]
-fn part1(input: &Vec<Operation>) -> usize {
+fn part1(input: &[Operation]) -> usize {
     input
         .iter()
         .map(|operation| match operation {
@@ -36,7 +36,7 @@ fn part1(input: &Vec<Operation>) -> usize {
 }
 
 #[aoc(day3, part2)]
-fn part2(input: &Vec<Operation>) -> usize {
+fn part2(input: &[Operation]) -> usize {
     let mut enabled = true;
 
     input

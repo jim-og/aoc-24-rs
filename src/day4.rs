@@ -16,11 +16,11 @@ enum Direction {
     NorthWest,
 }
 
-trait Offset {
+trait Offsetable {
     fn offset(&self, offset: isize, direction: &Direction) -> Point;
 }
 
-impl Offset for Point {
+impl Offsetable for Point {
     fn offset(&self, offset: isize, direction: &Direction) -> Point {
         match direction {
             Direction::North => (self.0 - offset, self.1),
@@ -42,7 +42,48 @@ struct WordSearch {
 }
 
 impl WordSearch {
-    fn solve(&self, word: &str) -> usize {
+    fn search_for_xword(&self) -> usize {
+        let combinations = HashSet::from(["MSSM", "MMSS", "SMMS", "SSMM"]);
+        let mut res = 0;
+
+        for row in 0..=self.max.0 {
+            for col in 0..=self.max.1 {
+                let c = self
+                    .map
+                    .get(&(row, col))
+                    .expect("Should be a letter at this position");
+
+                if *c != 'A' {
+                    continue;
+                }
+
+                let directions = [
+                    Direction::NorthEast,
+                    Direction::SouthEast,
+                    Direction::SouthWest,
+                    Direction::NorthWest,
+                ];
+
+                let cross = directions
+                    .iter()
+                    .map(|direction| {
+                        self.map
+                            .get(&(row, col).offset(1, direction))
+                            .unwrap_or(&'.')
+                    })
+                    .copied()
+                    .collect::<String>();
+
+                if combinations.contains(&cross.as_str()) {
+                    res += 1;
+                }
+            }
+        }
+
+        res
+    }
+
+    fn search_for_word(&self, word: &str) -> usize {
         let mut res = 0;
 
         for row in 0..=self.max.0 {
@@ -100,12 +141,12 @@ fn parse(input: &str) -> WordSearch {
 
 #[aoc(day4, part1)]
 fn part1(input: &WordSearch) -> usize {
-    input.solve("XMAS")
+    input.search_for_word("XMAS")
 }
 
 #[aoc(day4, part2)]
-fn part2(_input: &WordSearch) -> String {
-    todo!()
+fn part2(input: &WordSearch) -> usize {
+    input.search_for_xword()
 }
 
 #[cfg(test)]
@@ -133,12 +174,13 @@ mod tests {
 
     #[test]
     fn part2_example() {
-        assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
+        assert_eq!(part2(&parse(TEST)), 9);
     }
 
     #[test]
     fn mainline() {
         let input = &parse(&parser::load_input(4));
         assert_eq!(part1(input), 2646);
+        assert_eq!(part2(input), 2000);
     }
 }

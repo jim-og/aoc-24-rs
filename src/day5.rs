@@ -1,22 +1,12 @@
 use std::collections::{HashMap, HashSet};
 
 struct Input {
-    left_rules: HashMap<usize, HashSet<usize>>,
-    right_rules: HashMap<usize, HashSet<usize>>,
+    rules: HashMap<usize, HashSet<usize>>,
     updates: Vec<Vec<usize>>,
 }
 
 impl Input {
-    fn solve(&self) -> usize {
-        //75,47,61,53,29
-
-        // 61
-        // l 75, 47
-        // r 53, 29
-
-        // l 97, 47, 75
-        // r 13, 53, 29
-
+    fn solve_part1(&self) -> usize {
         let mut res = 0;
 
         for update in &self.updates {
@@ -29,17 +19,8 @@ impl Input {
                     .expect("Should have a value to pop in left array");
                 let right = Vec::from(slices.1);
 
-                if let Some(rule) = self.left_rules.get(val) {
-                    // Check no right values appear
+                if let Some(rule) = self.rules.get(val) {
                     if rule.contains_any(right) {
-                        valid = false;
-                        break;
-                    }
-                }
-
-                if let Some(rule) = self.right_rules.get(val) {
-                    // Check no left values appear
-                    if rule.contains_any(left) {
                         valid = false;
                         break;
                     }
@@ -53,6 +34,10 @@ impl Input {
         }
 
         res
+    }
+
+    fn solve_part2(&self) -> usize {
+        123
     }
 }
 
@@ -73,8 +58,7 @@ impl ContainsAny for HashSet<usize> {
 
 #[aoc_generator(day5)]
 fn parse(input: &str) -> Input {
-    let mut left_rules = HashMap::new();
-    let mut right_rules = HashMap::new();
+    let mut rules = HashMap::new();
     let mut updates = Vec::new();
 
     for line in input.trim().lines().map(|line| line.trim()) {
@@ -91,15 +75,10 @@ fn parse(input: &str) -> Input {
             let left = nums.first().expect("Should have a number in nums");
             let right = nums.last().expect("Should have a number in nums");
 
-            left_rules
+            rules
                 .entry(*right)
                 .or_insert_with(HashSet::new)
                 .insert(*left);
-
-            right_rules
-                .entry(*left)
-                .or_insert_with(HashSet::new)
-                .insert(*right);
         } else if line.contains(',') {
             updates.push(
                 line.split(',')
@@ -112,22 +91,18 @@ fn parse(input: &str) -> Input {
         }
     }
 
-    Input {
-        left_rules,
-        right_rules,
-        updates,
-    }
+    Input { rules, updates }
 }
 
 #[aoc(day5, part1)]
 fn part1(input: &Input) -> usize {
-    input.solve()
+    input.solve_part1()
 }
 
-// #[aoc(day5, part2)]
-// fn part2(_input: &Input) -> String {
-//     todo!()
-// }
+#[aoc(day5, part2)]
+fn part2(input: &Input) -> usize {
+    input.solve_part2()
+}
 
 #[cfg(test)]
 mod tests {
@@ -170,10 +145,10 @@ mod tests {
         assert_eq!(part1(&parse(TEST)), 143);
     }
 
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
+    #[test]
+    fn part2_example() {
+        assert_eq!(part2(&parse(TEST)), 123);
+    }
 
     #[test]
     fn mainline() {

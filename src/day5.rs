@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    cmp::Ordering,
+    collections::{HashMap, HashSet},
+};
 
 struct Input {
     rules: HashMap<usize, HashSet<usize>>,
@@ -6,30 +9,51 @@ struct Input {
 }
 
 impl Input {
+    fn update_valid(&self, update: &[usize]) -> bool {
+        let mut valid = true;
+
+        for (i, val) in update.iter().enumerate() {
+            let slices = update.split_at(i + 1);
+            let mut left = Vec::from(slices.0);
+            left.pop()
+                .expect("Should have a value to pop in left array");
+            let right = Vec::from(slices.1);
+
+            if let Some(rule) = self.rules.get(val) {
+                if rule.contains_any(right) {
+                    valid = false;
+                    break;
+                }
+            }
+        }
+
+        valid
+    }
+
+    fn order_update(&self, update: &[usize]) -> usize {
+        let mut cloned = update.to_owned();
+
+        cloned.sort_by(|a, b| {
+            if let Some(rule) = self.rules.get(b) {
+                if rule.contains(a) {
+                    Ordering::Less
+                } else {
+                    Ordering::Greater
+                }
+            } else {
+                Ordering::Greater
+            }
+        });
+
+        cloned[cloned.len() / 2]
+    }
+
     fn solve_part1(&self) -> usize {
         let mut res = 0;
 
         for update in &self.updates {
-            let mut valid = true;
-
-            for (i, val) in update.iter().enumerate() {
-                let slices = update.split_at(i + 1);
-                let mut left = Vec::from(slices.0);
-                left.pop()
-                    .expect("Should have a value to pop in left array");
-                let right = Vec::from(slices.1);
-
-                if let Some(rule) = self.rules.get(val) {
-                    if rule.contains_any(right) {
-                        valid = false;
-                        break;
-                    }
-                }
-            }
-
-            if valid {
-                let (left, _) = update.split_at(update.len() / 2 + 1);
-                res += left.last().expect("Should have a last value in left")
+            if self.update_valid(update) {
+                res += update[update.len() / 2];
             }
         }
 
@@ -37,7 +61,15 @@ impl Input {
     }
 
     fn solve_part2(&self) -> usize {
-        123
+        let mut res = 0;
+
+        for update in &self.updates {
+            if !self.update_valid(update) {
+                res += self.order_update(update);
+            }
+        }
+
+        res
     }
 }
 
@@ -154,5 +186,6 @@ mod tests {
     fn mainline() {
         let input = &parse(&parser::load_input(5));
         assert_eq!(part1(input), 5329);
+        assert_eq!(part2(input), 5833);
     }
 }

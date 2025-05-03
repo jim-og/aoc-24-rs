@@ -49,27 +49,29 @@ impl Input {
     }
 
     fn solve_part1(&self) -> usize {
-        let mut res = 0;
-
-        for update in &self.updates {
-            if self.update_valid(update) {
-                res += update[update.len() / 2];
-            }
-        }
-
-        res
+        self.updates
+            .iter()
+            .map(|update| {
+                if self.update_valid(update) {
+                    update[update.len() / 2]
+                } else {
+                    0
+                }
+            })
+            .sum()
     }
 
     fn solve_part2(&self) -> usize {
-        let mut res = 0;
-
-        for update in &self.updates {
-            if !self.update_valid(update) {
-                res += self.order_update(update);
-            }
-        }
-
-        res
+        self.updates
+            .iter()
+            .map(|update| {
+                if !self.update_valid(update) {
+                    self.order_update(update)
+                } else {
+                    0
+                }
+            })
+            .sum()
     }
 }
 

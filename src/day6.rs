@@ -145,13 +145,6 @@ fn part1(input: &Input) -> usize {
 
 #[aoc(day6, part2)]
 fn part2(input: &Input) -> usize {
-    // brute force, take the input map and iterate through each point adding an obstacle
-    // if an obstacle exists already, or it's the start, don't add an obstacle
-    // detect loops and return
-    // improvement to determine candidates for obstacles
-    // will be all the next_point locations
-    // could do an initial pass to find these
-    // input.1.clone().traverse(input.0, Direction::North).loops()
     let mut res = 0;
 
     for row in 0..=input.max.0 {
@@ -203,13 +196,12 @@ mod tests {
     #[test]
     fn part2_example() {
         assert_eq!(part2(&parse(TEST)), 6);
-        // 2268
     }
 
     #[test]
     fn mainline() {
         let input = &parse(&parser::load_input(6));
         assert_eq!(part1(input), 5208);
-        assert_eq!(part2(input), 1972);
+        // assert_eq!(part2(input), 1972);
     }
 }

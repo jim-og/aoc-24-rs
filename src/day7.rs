@@ -5,15 +5,12 @@ struct Equation {
 
 impl Equation {
     fn solve(&self, acc: isize, index: usize) -> bool {
-        if index >= self.numbers.len() {
-            return acc == self.target;
+        match self.numbers.get(index) {
+            Some(number) => {
+                self.solve(acc + number, index + 1) || self.solve(acc * number, index + 1)
+            }
+            None => acc == self.target,
         }
-
-        if let Some(number) = self.numbers.get(index) {
-            return self.solve(acc + number, index + 1) || self.solve(acc * number, index + 1);
-        }
-
-        false
     }
 }
 
@@ -23,21 +20,17 @@ fn parse(input: &str) -> Vec<Equation> {
         .trim()
         .lines()
         .map(|line| {
-            line.trim()
-                .split([':', ' '])
-                .filter(|value| !value.is_empty())
-                .map(|value| {
-                    value
-                        .parse::<isize>()
-                        .expect("Error parsing str value to number")
-                })
-                .collect::<Vec<isize>>()
-        })
-        .map(|values| Equation {
-            target: *values
-                .first()
-                .expect("Expected equation to have a target value"),
-            numbers: values[1..].to_vec(),
+            let (target, numbers) = line
+                .trim()
+                .split_once(": ")
+                .expect("Error splitting input line");
+            Equation {
+                target: target.parse().expect("Error parsing target"),
+                numbers: numbers
+                    .split_whitespace()
+                    .map(|number| number.parse().expect("Error parsing numbers"))
+                    .collect(),
+            }
         })
         .collect()
 }

@@ -4,11 +4,23 @@ struct Equation {
 }
 
 impl Equation {
-    fn solve(&self, acc: isize, index: usize) -> bool {
+    fn solve(&self, acc: isize, index: usize, concat_enabled: bool) -> bool {
         match self.numbers.get(index) {
             Some(number) => {
-                self.solve(acc + number, index + 1) || self.solve(acc * number, index + 1)
+                if self.solve(acc + number, index + 1, concat_enabled)
+                    || self.solve(acc * number, index + 1, concat_enabled)
+                {
+                    true
+                } else if concat_enabled {
+                    let combined = format!("{}{}", acc, number)
+                        .parse::<isize>()
+                        .expect("Error concatenating numbers");
+                    self.solve(combined, index + 1, concat_enabled)
+                } else {
+                    false
+                }
             }
+            // All numbers used, have we got the right answer?
             None => acc == self.target,
         }
     }
@@ -36,17 +48,21 @@ fn parse(input: &str) -> Vec<Equation> {
 }
 
 #[aoc(day7, part1)]
-fn part1(input: &Vec<Equation>) -> isize {
+fn part1(input: &[Equation]) -> isize {
     input
         .iter()
-        .filter(|equation| equation.solve(0, 0))
+        .filter(|equation| equation.solve(0, 0, false))
         .map(|equation| equation.target)
         .sum()
 }
 
 #[aoc(day7, part2)]
-fn part2(input: &Vec<Equation>) -> String {
-    todo!()
+fn part2(input: &[Equation]) -> isize {
+    input
+        .iter()
+        .filter(|equation| equation.solve(0, 0, true))
+        .map(|equation| equation.target)
+        .sum()
 }
 
 #[cfg(test)]
@@ -73,12 +89,13 @@ mod tests {
 
     #[test]
     fn part2_example() {
-        assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
+        assert_eq!(part2(&parse(TEST)), 11387);
     }
 
     #[test]
     fn mainline() {
         let input = &parse(&parser::load_input(7));
         assert_eq!(part1(input), 3119088655389);
+        assert_eq!(part2(input), 264184041398847);
     }
 }

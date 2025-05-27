@@ -48,8 +48,8 @@ fn part1(input: &Input) -> usize {
 
     for (_, antennas) in input.antennas.iter() {
         for (i, a1) in antennas.iter().enumerate() {
-            for j in i + 1..antennas.len() {
-                let a2 = antennas[j];
+            for antenna in antennas.iter().skip(i + 1) {
+                let a2 = antenna;
                 let drow = a1.0 - a2.0;
                 let dcol = a1.1 - a2.1;
                 let an1 = (a1.0 + drow, a1.1 + dcol);

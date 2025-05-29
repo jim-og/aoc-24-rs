@@ -57,13 +57,15 @@ fn parse(input: &str) -> Vec<Block> {
         .enumerate()
         .map(|(index, c)| (index, c.to_digit(10).expect("Failed to cast char to usize")))
         .flat_map(|(index, n)| {
-            std::iter::repeat(if index.is_even() {
-                id += 1;
-                Block::File(id - 1)
-            } else {
-                Block::Empty
-            })
-            .take(n as usize)
+            std::iter::repeat_n(
+                if index.is_even() {
+                    id += 1;
+                    Block::File(id - 1)
+                } else {
+                    Block::Empty
+                },
+                n as usize,
+            )
             .collect::<Vec<Block>>()
         })
         .collect()

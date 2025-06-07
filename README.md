@@ -9,4 +9,4 @@ My solutions to 2024's [Advent of Code](https://adventofcode.com/2024).
 1. Day 3 uses `regex`.
 1. Day 5 has an example of sorting with a custom predicate.
 1. Day 7 might be the most concise AoC solution I've done? The parse fn is a nice split, cast, and collect example. 
-1. Day 10, I originally solved Part 2 before understanding the rules of Part 1. This day has a nice example of using `fold` to accumulate two results.
+1. Day 10, I accidently solved Part 2 first before understanding the rules of Part 1. This day has a nice example of using `fold` to accumulate two results.

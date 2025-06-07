@@ -18,16 +18,17 @@ impl Facility {
         ]
         .into_iter()
         .filter(|point| match self.map.get(point) {
+            // The question states that each step must increment by exactly 1 to be valid.
             Some(value) => *value == (height + 1),
             None => false,
         })
         .collect()
     }
 
-    fn hike(&self, point: &Point) -> HashSet<Point> {
+    fn hike(&self, point: &Point) -> Vec<Point> {
         let height = self.map.get(point).expect("Expected point to exist in map");
         if *height == 9 {
-            HashSet::from([*point])
+            Vec::from([*point])
         } else {
             self.next_steps(point)
                 .iter()
@@ -36,11 +37,16 @@ impl Facility {
         }
     }
 
-    fn set_off(&self) -> usize {
-        self.trailheads
-            .iter()
-            .map(|point| self.hike(point).len())
-            .sum()
+    fn set_off(&self) -> (usize, usize) {
+        self.trailheads.iter().map(|point| self.hike(point)).fold(
+            (0, 0),
+            |(acc_score, acc_rating), summits| {
+                // Part 1 is how many unique SUMMITS a trailhead can reach.
+                // Part 2 is how many unique TRAILS from a trailhead lead to a summit.
+                let summits_set: HashSet<_> = summits.iter().collect();
+                (acc_score + summits_set.len(), acc_rating + summits.len())
+            },
+        )
     }
 }
 
@@ -52,6 +58,7 @@ fn parse(input: &str) -> Facility {
     for (row, line) in input.trim().lines().enumerate() {
         for (col, c) in line.trim().chars().enumerate() {
             let n = if c == '.' {
+                // Set to an arbitrary number higher than the summit.
                 10
             } else {
                 c.to_digit(10).expect("Failed to convert char")
@@ -70,12 +77,12 @@ fn parse(input: &str) -> Facility {
 
 #[aoc(day10, part1)]
 fn part1(input: &Facility) -> usize {
-    input.set_off()
+    input.set_off().0
 }
 
 #[aoc(day10, part2)]
-fn part2(_input: &Facility) -> String {
-    todo!()
+fn part2(input: &Facility) -> usize {
+    input.set_off().1
 }
 
 #[cfg(test)]
@@ -132,6 +139,35 @@ mod tests {
         10456732
     ";
 
+    const INPUT_5: &str = "
+        .....0.
+        ..4321.
+        ..5..2.
+        ..6543.
+        ..7..4.
+        ..8765.
+        ..9....
+    ";
+
+    const INPUT_6: &str = "
+        ..90..9
+        ...1.98
+        ...2..7
+        6543456
+        765.987
+        876....
+        987....
+    ";
+
+    const INPUT_7: &str = "
+        012345
+        123456
+        234567
+        345678
+        4.6789
+        56789.
+    ";
+
     #[test_case(INPUT_0, 1; "input_0")]
     #[test_case(INPUT_1, 2; "input_1")]
     #[test_case(INPUT_2, 4; "input_2")]
@@ -141,9 +177,18 @@ mod tests {
         assert_eq!(part1(&parse(input)), want);
     }
 
+    #[test_case(INPUT_5, 3; "input_5")]
+    #[test_case(INPUT_6, 13; "input_6")]
+    #[test_case(INPUT_7, 227; "input_7")]
+    #[test_case(INPUT_4, 81; "input_4")]
+    fn part2_example(input: &str, want: usize) {
+        assert_eq!(part2(&parse(input)), want);
+    }
+
     #[test]
     fn mainline() {
         let input = &parse(&parser::load_input(10));
         assert_eq!(part1(input), 841);
+        assert_eq!(part2(input), 1875);
     }
 }

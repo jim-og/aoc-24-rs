@@ -1,14 +1,14 @@
 use num_integer::Integer;
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 enum Block {
-    File(usize),
+    Fragment(usize),
     Empty,
 }
 
 trait Disk {
     fn checksum(&self) -> usize;
-    fn fragment(&mut self) -> &mut Vec<Block>;
+    fn fragment(self) -> Self;
 }
 
 impl Disk for Vec<Block> {
@@ -16,13 +16,13 @@ impl Disk for Vec<Block> {
         self.iter()
             .enumerate()
             .map(|(position, block)| match block {
-                Block::File(id) => position * id,
+                Block::Fragment(id) => position * id,
                 Block::Empty => 0,
             })
             .sum()
     }
 
-    fn fragment(&mut self) -> &mut Self {
+    fn fragment(mut self) -> Self {
         let mut l = 0_usize;
         let mut r = self.len() - 1;
 
@@ -47,6 +47,17 @@ impl Disk for Vec<Block> {
     }
 }
 
+struct _File {
+    id: usize,
+    moved: bool,
+}
+
+impl _File {
+    fn _new(id: usize) -> Self {
+        Self { id, moved: false }
+    }
+}
+
 #[aoc_generator(day9)]
 fn parse(input: &str) -> Vec<Block> {
     let mut id = 0;
@@ -60,7 +71,7 @@ fn parse(input: &str) -> Vec<Block> {
             std::iter::repeat_n(
                 if index.is_even() {
                     id += 1;
-                    Block::File(id - 1)
+                    Block::Fragment(id - 1)
                 } else {
                     Block::Empty
                 },
@@ -77,8 +88,8 @@ fn part1(input: &[Block]) -> usize {
 }
 
 #[aoc(day9, part2)]
-fn part2(input: &[Block]) -> usize {
-    input.to_owned().fragment().checksum()
+fn part2(_input: &[Block]) -> usize {
+    todo!()
 }
 
 #[cfg(test)]
@@ -95,11 +106,6 @@ mod tests {
     fn part1_example(input: &str, want: usize) {
         assert_eq!(part1(&parse(input)), want);
     }
-
-    // #[test]
-    // fn part2_example() {
-    //     assert_eq!(part2(&parse("<EXAMPLE>")), "<RESULT>");
-    // }
 
     #[test]
     fn mainline() {

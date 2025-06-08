@@ -1,4 +1,27 @@
+use lazy_static::lazy_static;
+use std::collections::HashMap;
+use std::sync::Mutex;
+
+lazy_static! {
+    static ref STORE: Mutex<PebbleStore> = Mutex::new(PebbleStore::default());
+}
+
 type Pebbles = Vec<usize>;
+
+#[derive(Default)]
+struct PebbleStore {
+    store: HashMap<usize, Pebbles>,
+}
+
+impl PebbleStore {
+    fn get(&self, pebble: usize) -> Option<&Pebbles> {
+        self.store.get(&pebble)
+    }
+
+    fn insert(&mut self, before: usize, after: Pebbles) {
+        self.store.insert(before, after);
+    }
+}
 
 trait Blinkable {
     fn blink(self) -> Pebbles;
@@ -6,9 +29,13 @@ trait Blinkable {
 
 impl Blinkable for usize {
     fn blink(self) -> Pebbles {
+        if let Some(pebbles) = STORE.lock().unwrap().get(self) {
+            return pebbles.to_vec();
+        }
+
         let pebble_string = self.to_string();
 
-        if self == 0 {
+        let pebbles = if self == 0 {
             vec![1]
         } else if pebble_string.len() % 2 == 0 {
             // Even number of digits
@@ -20,7 +47,10 @@ impl Blinkable for usize {
         } else {
             // Odd number of digits
             vec![self * 2024]
-        }
+        };
+
+        STORE.lock().unwrap().insert(self, pebbles.clone());
+        pebbles
     }
 }
 
@@ -52,8 +82,37 @@ fn part1(input: &Pebbles) -> usize {
 }
 
 #[aoc(day11, part2)]
-fn part2(_input: &Pebbles) -> usize {
-    todo!()
+fn part2(input: &Pebbles) -> usize {
+    let mut pebbles: HashMap<usize, usize> = HashMap::new();
+    input
+        .iter()
+        .for_each(|&num| *pebbles.entry(num).or_insert(0) += 1);
+
+    for _ in 0..75 {
+        let mut split_pebbles = HashMap::new();
+
+        for (&pebble, &count) in pebbles.iter() {
+            let pebble_string = pebble.to_string();
+            if pebble == 0 {
+                *split_pebbles.entry(1).or_insert(0) += count;
+            } else if pebble_string.len() % 2 == 0 {
+                // Even number of digits
+                let (left, right) = pebble_string.split_at(pebble_string.len() / 2);
+                *split_pebbles
+                    .entry(left.parse().expect("Error parsing left pebble"))
+                    .or_insert(0) += count;
+                *split_pebbles
+                    .entry(right.parse().expect("Error parsing left pebble"))
+                    .or_insert(0) += count;
+            } else {
+                // Odd number of digits
+                *split_pebbles.entry(pebble * 2024).or_insert(0) += count;
+            }
+        }
+
+        pebbles = split_pebbles;
+    }
+    pebbles.values().sum()
 }
 
 #[cfg(test)]
@@ -93,5 +152,6 @@ mod tests {
     fn mainline() {
         let input = &parse(&parser::load_input(11));
         assert_eq!(part1(input), 228668);
+        assert_eq!(part2(input), 270673834779359);
     }
 }

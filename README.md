@@ -10,3 +10,4 @@ My solutions to 2024's [Advent of Code](https://adventofcode.com/2024).
 1. Day 5 has an example of sorting with a custom predicate.
 1. Day 7 might be the most concise AoC solution I've done? The parse fn is a nice split, cast, and collect example. 
 1. Day 10, I accidently solved Part 2 first before understanding the rules of Part 1. This day has a nice example of using `fold` to accumulate two results.
+1. Day 11 has two different solutions for the same problem. The first, for Part 1, is influenced by the problem description and maintains a vector of pebbles which split and remain in order. Whilst easier to reason about conceptually, it's too inefficient for Part 2. The second solution ignores ordering, as it isn't relevant, and just keeps a count of how many pebbles there are for each value.
